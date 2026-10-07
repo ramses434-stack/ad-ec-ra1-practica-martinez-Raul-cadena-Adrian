@@ -57,7 +57,6 @@ public class ProductoEntity {
                 "Descuento: " + producto.getDescuento() + System.lineSeparator() +
                 "Precio final: " + getPrecioFinal() + System.lineSeparator() +
                 "Coste: " + getCost() + System.lineSeparator() +
-                "Beneficio: " + getProfit() + System.lineSeparator() +
-                "====================================================";
+                "Beneficio: " + getProfit() + System.lineSeparator() +";
     }
 }
