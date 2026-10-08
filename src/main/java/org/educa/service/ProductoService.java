@@ -43,8 +43,39 @@ public class ProductoService {
     }
 
     public void exportSummary(String path, String fileXml) throws JAXBException, IOException {
-        //TODO: Implementar
+        //Obtener la información del fichero físico XML
+        java.io.File archivoXml = new java.io.File(fileXml);
+        String nombreArchivo = archivoXml.getName();
+        String rutaAbsoluta = archivoXml.getAbsolutePath();
+        long tamanoBytes = archivoXml.length();
 
+        //Extraer el Mes y año y evitar a su vez la extensión .xml
+        String nombreSinExtension = nombreArchivo.substring(0, nombreArchivo.lastIndexOf('.'));
+        String mesAnio = nombreArchivo.substring(nombreArchivo.indexOf('_') + 1, nombreArchivo.lastIndexOf('.'));
+
+        //Procesar los datos
+        List<ProductoEntity> productos = this.readFile(fileXml);
+        int numeroDeProductos = productos.size();
+
+        //Calcular el beneficio total
+        BigDecimal beneficioTotal = BigDecimal.ZERO;
+        for (ProductoEntity producto : productos) {
+            beneficioTotal = beneficioTotal.add(producto.getProfit());
+        }
+
+        //Insertar datos
+        SummaryEntity summary = new SummaryEntity();
+
+        summary.setName(mesAnio);
+        summary.setNumberOfProducts(numeroDeProductos);
+        summary.setTotalProfit(beneficioTotal);
+        summary.setFileAbsolutePath(rutaAbsoluta);
+        summary.setFileName(nombreSinExtension);
+        summary.setFileSize(tamanoBytes);
+
+        //Guardar el fichero txt
+        org.educa.dao.XMLDao xmlDao = new org.educa.dao.XMLDaoImpl();
+        xmlDao.exportarResumen(summary, path, mesAnio);
     }
 
     public void exportExcel(String path, String fileXml) throws JAXBException, IOException, ParseException {
