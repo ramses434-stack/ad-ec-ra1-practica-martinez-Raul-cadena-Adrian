@@ -1,0 +1,78 @@
+    package org.educa.dao;
+    
+    import generated.Producto;
+    import generated.Productos;
+    import jakarta.xml.bind.JAXBContext;
+    import jakarta.xml.bind.JAXBException;
+    import jakarta.xml.bind.Unmarshaller;
+    import org.apache.poi.ss.usermodel.CellStyle;
+    import org.apache.poi.ss.usermodel.FillPatternType;
+    import org.apache.poi.ss.usermodel.IndexedColors;
+    import org.apache.poi.ss.usermodel.Row;
+    import org.apache.poi.ss.usermodel.Sheet;
+    import org.apache.poi.ss.usermodel.Workbook;
+    import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+    import org.educa.entity.ProductoEntity;
+    
+    import java.io.File;
+    import java.io.FileOutputStream;
+    import java.io.IOException;
+    import java.util.List;
+    
+    public class ProductoDaoImpl implements ProductoDao {
+        @Override
+        public List<Producto> leerFichero(String ficheroxml) throws JAXBException {
+            JAXBContext context = JAXBContext.newInstance(Productos.class);
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+            Productos productos = (Productos) unmarshaller.unmarshal(new File(ficheroxml));
+            return productos.getProducto();
+        }
+    
+        @Override
+        public void guardarExcel(String rutaFichero, List<ProductoEntity> productosEntities) throws IOException {
+            try (Workbook libro = new XSSFWorkbook();
+                 FileOutputStream salida = new FileOutputStream(rutaFichero)) {
+                Sheet hoja = libro.createSheet("inventario");
+    
+                Row filaCabezera = hoja.createRow(0);
+                String[] cabezeras = {"Codigo", "Número de Serie", "Precio",
+                        "Descuento", "Precio Final",
+                        "Costes Envío", "Costes Almacenaje", "Beneficio"};
+                for (int i = 0; i < cabezeras.length; i++) {
+                    filaCabezera.createCell(i).setCellValue(cabezeras[i]);
+                }
+    
+                for (int i = 0; i < productosEntities.size(); i++) {
+                    ProductoEntity productoEntity = productosEntities.get(i);
+                    Producto producto = productoEntity.getProducto();
+                    Row filaProducto = hoja.createRow(i + 1);
+    
+                    filaProducto.createCell(0).setCellValue(producto.getCodigo());
+                    filaProducto.createCell(1).setCellValue(producto.getNumeroSerie());
+                    filaProducto.createCell(2).setCellValue(producto.getPrecio().doubleValue());
+                    filaProducto.createCell(3).setCellValue(producto.getDescuento().doubleValue());
+                    filaProducto.createCell(4).setCellValue(
+                            productoEntity.getPrecioFinal().doubleValue());
+                    filaProducto.createCell(5).setCellValue(
+                            producto.getCostes().getCostesEnvio().doubleValue());
+                    filaProducto.createCell(6).setCellValue(
+                            producto.getCostes().getCostesAlmacenaje().doubleValue());
+                    filaProducto.createCell(7).setCellValue(productoEntity.getProfit().doubleValue());
+                }
+                libro.write(salida);
+            }
+        }
+        private CellStyle createCellStyle(Workbook libro , IndexedColors colors ,String formato){
+            CellStyle style = libro.createCellStyle();
+            style.setFillForegroundColor(colors.getIndex());
+            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            if(formato!=null){
+                style.setDataFormat(libro.createDataFormat().getFormat(formato));
+            }
+            return style;
+        }
+    
+        private void escribirCelda(){
+    
+        }
+    }
