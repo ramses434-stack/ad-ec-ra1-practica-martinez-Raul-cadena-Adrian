@@ -21,6 +21,16 @@ public class ProductoService {
     private final ProductoDao productoDao = new ProductoDaoImpl();
     private final XmlDao xmlDao = new XmlDaoImpl();
 
+    /**
+     * Lee los productos de un fichero XML y calcula sus datos economicos.
+     *  El precio final se calcula precio * (100 - decuento)/100.
+     *  El coste se calula sumando los costes de envío más coste de almacenaje.
+     *  Bewneficio se calcula precio final - costes.
+     * @param fileXml ruta del fichero Xml con el inventario
+     * @return lista de productos con el precio final, costes y beneficios.
+     * @throws JAXBException si el XML no se puede leer o
+     * no cumple el esquema lanza una excepcion
+     */
     public List<ProductoEntity> readFile(String fileXml) throws JAXBException {
         List<Producto> productos = productoDao.leerFichero(fileXml);
         List<ProductoEntity> productoEntities = new ArrayList<>();
@@ -47,6 +57,15 @@ public class ProductoService {
         return productoEntities;
     }
 
+    /**
+     *Crea un fichero de texto donde resume el inventario.
+     * El resumen incleye mes, año, número de productos,
+     * beneficio total y datos del XML(ruta, nombre y extension y tamaño en bytes)
+     * @param path ruta a la carpeta donde se guarda.
+     * @param fileXml ruta al ficheroXML con el inventario
+     * @throws JAXBException si el XML no se lee o no cumple el esquema.
+     * @throws IOException si falla la escritura.
+     */
     public void exportSummary(String path, String fileXml) throws JAXBException, IOException {
         File archivoXml = new File(fileXml);
         String nombreArchivo = archivoXml.getName();
@@ -80,12 +99,26 @@ public class ProductoService {
 
     }
 
+    /** Crea un fichero excel con los datos del inventario.
+     * El fichero se llama export_<mes y año>.xlsx, donde el mes y año se
+     * obtienen del nombre del XML llamando al metodo obtenerMesAnio.
+     * Los datos se leen con {@link #readFile(String)}.
+     * @param path Carpeta donde se guarda el Excel.
+     * @param fileXml ruta donde se encuentra el Fichero XML.
+     * @throws JAXBException si el XML no se puede leer o no cumple el esquema
+     * @throws IOException si falla la escritura del fichero Excel
+     */
     public void exportExcel(String path, String fileXml) throws JAXBException, IOException, ParseException {
         List<ProductoEntity> productos = readFile(fileXml);
         String nombreExcel = "export_" + obtenerMesAnio(fileXml) + ".xlsx";
         productoDao.guardarExcel(path + nombreExcel, productos);
     }
 
+    /**
+     * Extrae el mes y el año del nombre dle Fichero XML
+     * @param fileXml ruta del Fichero Xml.
+     * @return el mes y el año tal y como aparace en el nombre del fichero.
+     */
     private String obtenerMesAnio(String fileXml) {
         String nombre = new File(fileXml).getName();
         return nombre.substring(nombre.indexOf('_') + 1, nombre.lastIndexOf('.'));

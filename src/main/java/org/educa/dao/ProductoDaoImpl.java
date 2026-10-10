@@ -70,7 +70,7 @@ public class ProductoDaoImpl implements ProductoDao {
                     "Descuento", "Precio Final",
                     "Costes Envío", "Costes Almacenaje", "Beneficio"};
             for (int i = 0; i < cabeceras.length; i++) {
-                escribirCelda(filaCabecera, i, cabeceras[i], estiloCabecera);
+                escribirCeldaString(filaCabecera, i, cabeceras[i], estiloCabecera);
             }
             //datos
             for (int i = 0; i < productosEntities.size(); i++) {
@@ -79,24 +79,25 @@ public class ProductoDaoImpl implements ProductoDao {
                 Row filaProducto = hoja.createRow(i + 1);
                 int par = (i % 2);
 
-                escribirCelda(filaProducto, 0, producto.getCodigo(),
+                escribirCeldaString(filaProducto, 0, producto.getCodigo(),
                         estiloTexto[par]);
-                escribirCelda(filaProducto, 1, producto.getNumeroSerie(),
+                escribirCeldaString(filaProducto, 1, producto.getNumeroSerie(),
                         estiloTexto[par]);
-                escribirCelda(filaProducto, 2, producto.getPrecio().doubleValue(),
+                escribirCeldaDouble(filaProducto, 2, producto.getPrecio().doubleValue(),
                         estiloEuro[par]);
-                escribirCelda(filaProducto, 3, producto.getDescuento().doubleValue(),
+                escribirCeldaDouble(filaProducto, 3, producto.getDescuento().doubleValue(),
                         estiloPorcentaje[par]);
-                escribirCelda(filaProducto, 4, productoEntity.getPrecioFinal().doubleValue(),
+                escribirCeldaDouble(filaProducto, 4, productoEntity.getPrecioFinal().doubleValue(),
                         estiloEuro[par]);
-                escribirCelda(filaProducto, 5, producto.getCostes().getCostesEnvio().doubleValue(),
+                escribirCeldaDouble(filaProducto, 5, producto.getCostes().getCostesEnvio().doubleValue(),
                         estiloEuro[par]);
-                escribirCelda(filaProducto, 6, producto.getCostes().getCostesAlmacenaje().doubleValue(),
+                escribirCeldaDouble(filaProducto, 6, producto.getCostes().getCostesAlmacenaje().doubleValue(),
                         estiloEuro[par]);
-                escribirCelda(filaProducto, 7, productoEntity.getProfit().doubleValue(),
+                escribirCeldaDouble(filaProducto, 7, productoEntity.getProfit().doubleValue(),
                         estiloEuro[par]);
             }
             libro.write(salida);
+            //Ajuste de datos en la celda
             for (int i = 0; i < cabeceras.length; i++) {
                 hoja.autoSizeColumn(i);
             }
@@ -104,14 +105,13 @@ public class ProductoDaoImpl implements ProductoDao {
     }
 
     /**
-     *
-     * @param libro
-     * @param color
-     * @param formato
-     * @param alineacion
-     * @return
+     * Crea un estilo de celda con color de fondo, alineación.
+     * @param libro libro de excel al que le damos el estilo.
+     * @param color color de relleno de la celda.
+     * @param formato formato numerico de excel (euros y porccentajes).
+     * @param alineacion alineacion horizontal del contendio.
+     * @return El estilo de la celda ya configurado.
      */
-
     private CellStyle crearEstilo(Workbook libro, IndexedColors color, String formato, HorizontalAlignment alineacion) {
         CellStyle estilo = libro.createCellStyle();
         estilo.setFillForegroundColor(color.getIndex());
@@ -123,13 +123,27 @@ public class ProductoDaoImpl implements ProductoDao {
         return estilo;
     }
 
-    private void escribirCelda(Row fila, int columna, double valor, CellStyle style) {
+    /**
+     * Escribe el valor numerico si se considera un double en una celda nueva y aplica el estilo.
+     * @param fila fila en la que se crea la celda.
+     * @param columna posicion de la columna que empieza en 0.
+     * @param valor número que se escribe en la celda que es double.
+     * @param style estilo que se aplica en la celda.
+     */
+    private void escribirCeldaDouble(Row fila, int columna, double valor, CellStyle style) {
         Cell celda = fila.createCell(columna);
         celda.setCellValue(valor);
         celda.setCellStyle(style);
     }
 
-    private void escribirCelda(Row fila, int columna, String valor, CellStyle style) {
+    /** Escribe el valor numerico si se considera un String en una celda nueva
+     * y aplica el estilo.
+     * @param fila fila en la que se crea la celda.
+     * @param columna posicion de la columna que empieza en 0.
+     * @param valor número que se escribe en la celda que es String.
+     * @param style estilo que se aplica en la celda.
+     */
+    private void escribirCeldaString(Row fila, int columna, String valor, CellStyle style) {
         Cell celda = fila.createCell(columna);
         celda.setCellValue(valor);
         celda.setCellStyle(style);
